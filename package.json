@@ -1,5 +1,5 @@
 {
-  "name": "sails-mssql",
+  "name": "@vijaykonnackal/sails-mssql",
   "description": "a MsSql adapter for Waterline and Sails.js",
   "version": "1.1.1",
   "author": "Vijay Konnackal <vijay.konnackal@gmail.com>",
