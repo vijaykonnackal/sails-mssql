@@ -3,6 +3,9 @@
     "node": true,
     "mocha": true
   },
+  "parserOptions": {
+    "ecmaVersion": 10
+  },
   "rules": {
     "array-bracket-spacing":        [2, "never"],
     "callback-return":              [2, ["callback", "cb", "next", "done", "proceed"]],
@@ -22,6 +25,7 @@
     "no-unexpected-multiline":      [1],
     "no-unused-vars":               [2],
     "one-var":                      [2, "never"],
-    "semi":                         [1, "always"]
+    "semi":                         [1, "always"],
+    "quotes":                       [2, "single"]
   }
 }

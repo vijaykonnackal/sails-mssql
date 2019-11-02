@@ -14,13 +14,17 @@
 //
 // Create a new connection manager to use.
 
-var PG = require('machinepack-postgresql');
+var MSSQL = require('@vijaykonnackal/machinepack-mssql');
 
-module.exports = function createManager(url, config) {
-  var report = PG.createManager({
+module.exports = function createManager(url, config, cb) {
+  MSSQL.createManager({
     connectionString: url,
     meta: config
-  }).execSync();
+  }).exec(function createManagerCb(err, report) {
+    if (err) {
+      return cb(new Error('There was an error creating the connection manager.\n\n' + err.stack));
+    }
 
-  return report;
+    return cb(null, report);
+  });
 };

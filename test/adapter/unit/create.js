@@ -97,7 +97,7 @@ describe('Unit Tests ::', function() {
       var query = {
         using: 'test_create',
         newRecord: {
-          fieldC: new Buffer([1, 2, 3])
+          fieldC: new Buffer.from([1, 2, 3])
         },
         meta: {
           fetch: true
@@ -135,11 +135,11 @@ describe('Unit Tests ::', function() {
       });
     });
 
-    // Look into the bowels of the PG Driver and ensure the Create function handles
+    // Look into the bowels of the MsSql Driver and ensure the Create function handles
     // it's connections properly.
     it('should release its connection when completed', function(done) {
       var manager = Adapter.datastores.test.manager;
-      var preConnectionsAvailable = manager.pool.pool.availableObjectsCount();
+      var preConnectionsAvailable = manager.pool.pool.size;
 
       var query = {
         using: 'test_create',
@@ -154,7 +154,7 @@ describe('Unit Tests ::', function() {
           return done(err);
         }
 
-        var postConnectionsAvailable = manager.pool.pool.availableObjectsCount();
+        var postConnectionsAvailable = manager.pool.pool.size;
         assert.equal(preConnectionsAvailable, postConnectionsAvailable);
 
         return done();

@@ -10,7 +10,7 @@ module.exports = function runBenchmarks(name, testFns, done) {
     suite = suite.add(testFn.name, {
       defer: true,
       async: true,
-      fn: function(deferred) {
+      fn: function test(deferred) {
         testFn(function _afterRunningTestFn() {
           deferred.resolve();
         });
@@ -18,10 +18,9 @@ module.exports = function runBenchmarks(name, testFns, done) {
     });
   });
 
-  suite.on('cycle', function(event) {
+  suite.on('cycle', function onSuiteCycle(event) {
     console.log(' •', String(event.target));
-  })
-  .on('complete', function() {
+  }).on('complete', function onSuiteComplete() {
     // Time is measured in microseconds so 1000 = 1ms
     var fastestMean = _.first(this.filter('fastest')).stats.mean * 1000;
     var slowestMean = _.first(this.filter('slowest')).stats.mean * 1000;
@@ -35,6 +34,5 @@ module.exports = function runBenchmarks(name, testFns, done) {
     console.log('Slowest is ' + this.filter('slowest').map('name') + ' with an average of: ' + mean.slowest + 'ms');
 
     return done(undefined, this);
-  })
-  .run();
+  }).run();
 };

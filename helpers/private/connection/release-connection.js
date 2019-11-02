@@ -14,7 +14,7 @@
 //
 // Release an open database connection.
 
-var PG = require('machinepack-postgresql');
+var MSSQL = require('@vijaykonnackal/machinepack-mssql');
 
 module.exports = function releaseConnection(connection, leased, cb) {
   // If this connection was leased outside of the Adapter, don't release it.
@@ -24,7 +24,7 @@ module.exports = function releaseConnection(connection, leased, cb) {
     });
   }
 
-  PG.releaseConnection({
+  MSSQL.releaseConnection({
     connection: connection
   }).switch({
     error: function error(err) {

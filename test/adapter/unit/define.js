@@ -17,7 +17,7 @@ describe('Unit Tests ::', function() {
     // Attributes for the test table
     var definition = {
       id: {
-        columnType: 'serial',
+        columnType: '_number',
         autoIncrement: true
       },
       name: {

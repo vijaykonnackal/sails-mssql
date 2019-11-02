@@ -16,7 +16,8 @@ module.exports = {
     preProcessEachRecord: require('./query/pre-process-each-record'),
     processEachRecord: require('./query/process-each-record'),
     runNativeQuery: require('./query/run-native-query'),
-    runQuery: require('./query/run-query')
+    runQuery: require('./query/run-query'),
+    schemaName: require('./query/schema-name')
   },
 
   // Helpers for dealing with underlying database schema

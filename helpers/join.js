@@ -65,18 +65,12 @@ module.exports = require('machine').build({
     // Set a flag if a leased connection from outside the adapter was used or not.
     var leased = _.has(meta, 'leasedConnection');
 
-    //  ╔═╗╦ ╦╔═╗╔═╗╦╔═  ┌─┐┌─┐┬─┐  ┌─┐  ┌─┐┌─┐  ┌─┐┌─┐┬ ┬┌─┐┌┬┐┌─┐
-    //  ║  ╠═╣║╣ ║  ╠╩╗  ├┤ │ │├┬┘  ├─┤  ├─┘│ ┬  └─┐│  ├─┤├┤ │││├─┤
-    //  ╚═╝╩ ╩╚═╝╚═╝╩ ╩  └  └─┘┴└─  ┴ ┴  ┴  └─┘  └─┘└─┘┴ ┴└─┘┴ ┴┴ ┴
-    // This is a unique feature of Postgres. It may be passed in on a query
-    // by query basis using the meta input or configured on the datastore. Default
-    // to use the "public" schema.
-    var schemaName = 'public';
-    if (_.has(meta, 'schemaName')) {
-      schemaName = meta.schemaName;
-    } else if (inputs.datastore.config && inputs.datastore.config.schemaName) {
-      schemaName = inputs.datastore.config.schemaName;
-    }
+    //  ╔═╗╦ ╦╔═╗╔═╗╦╔═  ┌─┐┌─┐┬─┐  ┌─┐  ┌─┐┌─┐┬ ┬┌─┐┌┬┐┌─┐
+    //  ║  ╠═╣║╣ ║  ╠╩╗  ├┤ │ │├┬┘  ├─┤  └─┐│  ├─┤├┤ │││├─┤
+    //  ╚═╝╩ ╩╚═╝╚═╝╩ ╩  └  └─┘┴└─  ┴ ┴  └─┘└─┘┴ ┴└─┘┴ ┴┴ ┴
+    // It may be passed in on a query by query basis using the meta input or configured
+    // on the datastore. Default to use the public schema.
+    var schemaName = Helpers.query.schemaName(inputs, {meta});
 
 
     //  ╔═╗╦╔╗╔╔╦╗  ┌┬┐┌─┐┌┐ ┬  ┌─┐  ┌─┐┬─┐┬┌┬┐┌─┐┬─┐┬ ┬  ┬┌─┌─┐┬ ┬

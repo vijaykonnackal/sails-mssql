@@ -1,19 +1,20 @@
 /**
- * Support functions for helping with Postgres tests
+ * Support functions for helping with MsSql tests
  */
 
 var _ = require('@sailshq/lodash');
-var PG = require('machinepack-postgresql');
+var MSSQL = require('@vijaykonnackal/machinepack-mssql');
 var adapter = require('../../lib/adapter');
+var util = require('util');
 
 var Support = module.exports = {};
 
 Support.Config = {
-  host: process.env.POSTGRES_1_PORT_5432_TCP_ADDR || process.env.WATERLINE_ADAPTER_TESTS_HOST || 'localhost',
-  user: process.env.POSTGRES_ENV_POSTGRES_USER || process.env.WATERLINE_ADAPTER_TESTS_USER || process.env.PGUSER || 'sails',
-  password: process.env.POSTGRES_ENV_POSTGRES_PASSWORD || process.env.WATERLINE_ADAPTER_TESTS_PASSWORD || process.env.PGPASSWORD || 'sails',
-  database: process.env.POSTGRES_ENV_POSTGRES_DB || process.env.WATERLINE_ADAPTER_TESTS_DATABASE || 'adapter-tests',
-  port: process.env.POSTGRES_PORT_5432_TCP_PORT || process.env.WATERLINE_ADAPTER_TESTS_PORT || 5432
+  host: process.env.MSSQL_HOST || process.env.WATERLINE_ADAPTER_TESTS_HOST || 'localhost',
+  user: process.env.MSSQL_USER || process.env.WATERLINE_ADAPTER_TESTS_USER || 'sails',
+  password: process.env.MSSQL_PASSWORD || process.env.WATERLINE_ADAPTER_TESTS_PASSWORD || 'sails',
+  database: process.env.MSSQL_DB || process.env.WATERLINE_ADAPTER_TESTS_DATABASE || 'sails-test',
+  port: process.env.MSSQL_PORT || process.env.WATERLINE_ADAPTER_TESTS_PORT || 1433
 };
 
 // Fixture Model Def
@@ -40,27 +41,41 @@ Support.Definition = {
   fieldA: {
     type: 'string',
     autoMigrations: {
-      columnType: 'text'
+      columnType: 'varchar(4000)'
     }
   },
   fieldB: {
     type: 'string',
     autoMigrations: {
-      columnType: 'text'
+      columnType: 'varchar(4000)'
     }
   },
   fieldC: {
     type: 'ref',
     columnName: 'fieldC',
     autoMigrations: {
-      columnType: 'bytea'
+      columnType: 'varbinary(8000)'
     }
   },
   fieldD: {
     type: 'ref',
     columnName: 'fieldD',
     autoMigrations: {
-      columnType: 'timestamp'
+      columnType: 'datetime'
+    }
+  },
+  fieldE: {
+    type: 'int',
+    columnName: 'fieldE',
+    autoMigrations: {
+      columnType: 'int'
+    }
+  },
+  fieldF: {
+    type: 'int',
+    columnName: 'fieldF',
+    autoMigrations: {
+      columnType: 'int'
     }
   }
 };
@@ -104,9 +119,7 @@ Support.Setup = function setup(tableName, cb) {
       return cb(err);
     }
 
-    // console.log('Calling `define` with:', require('util').inspect(schema));
-
-    adapter.define('test', tableName, schema, cb);
+    adapter.define('test', tableName, schema, cb, {});
   });
 };
 
@@ -126,43 +139,36 @@ Support.registerConnection = function registerConnection(tableNames, cb) {
 };
 
 // Remove a table and destroy the manager
-Support.Teardown = function teardown(tableName, cb) {
+Support.Teardown = async function teardown(tableName, cb) {
   var manager = adapter.datastores[_.first(_.keys(adapter.datastores))].manager;
-  PG.getConnection({
+  let report = await MSSQL.getConnection({
     manager: manager,
     meta: Support.Config
-  }).exec(function getConnectionCb(err, report) {
+  });
+
+  var query = util.format('IF OBJECT_ID(\'dbo.%s\') IS NOT NULL BEGIN DROP TABLE %s END;', tableName, tableName);
+  await MSSQL.sendNativeQuery({
+    connection: report.connection,
+    nativeQuery: query
+  });
+
+  await MSSQL.releaseConnection({
+    connection: report.connection
+  });
+
+  adapter.teardown('test', function tearDownCb(err) {
     if (err) {
       return cb(err);
     }
-
-    var query = 'DROP TABLE IF EXISTS \"' + tableName + '";';
-    PG.sendNativeQuery({
-      connection: report.connection,
-      nativeQuery: query
-    }).exec(function dropTableCb(err) {
-      if (err) {
-        return cb(err);
-      }
-
-      PG.releaseConnection({
-        connection: report.connection
-      }).exec(function releaseConnectionCb(err) {
-        if (err) {
-          return cb(err);
-        }
-
-        delete adapter.datastores[_.first(_.keys(adapter.datastores))];
-        return cb();
-      });
-    });
+    delete adapter.datastores[_.first(_.keys(adapter.datastores))];
+    return cb();
   });
 };
 
 // Seed a record to use for testing
 Support.Seed = function seed(tableName, cb) {
   var manager = adapter.datastores[_.first(_.keys(adapter.datastores))].manager;
-  PG.getConnection({
+  MSSQL.getConnection({
     manager: manager,
     meta: Support.Config
   }).exec(function getConnectionCb(err, report) {
@@ -171,20 +177,20 @@ Support.Seed = function seed(tableName, cb) {
     }
 
     var query = [
-      'INSERT INTO "' + tableName + '" ("fieldA", "fieldB", "fieldC", "fieldD") ',
-      'values (\'foo\', \'bar\', null, null), (\'foo_2\', \'bAr_2\', $1, $2);'
+      'INSERT INTO "' + tableName + '" ("fieldA", "fieldB", "fieldC", "fieldD", "fieldE", "fieldF") ',
+      'values (\'foo\', \'bar\', null, null, 2, 1), (\'foo_2\', \'bAr_2\', @p0, @p1, 3, 2);'
     ].join('');
 
-    PG.sendNativeQuery({
+    MSSQL.sendNativeQuery({
       connection: report.connection,
       nativeQuery: query,
-      valuesToEscape: [new Buffer([1, 2, 3]), new Date('2001-06-15 12:00:00')]
+      valuesToEscape: [new Buffer.from([1, 2, 3]), new Date('2001-06-15 12:00:00')]
     }).exec(function seedCb(err) {
       if (err) {
         return cb(err);
       }
 
-      PG.releaseConnection({
+      MSSQL.releaseConnection({
         connection: report.connection
       }).exec(cb);
     });

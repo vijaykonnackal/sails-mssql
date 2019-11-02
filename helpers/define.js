@@ -5,6 +5,7 @@
 //  ██████╔╝███████╗██║     ██║██║ ╚████║███████╗
 //  ╚═════╝ ╚══════╝╚═╝     ╚═╝╚═╝  ╚═══╝╚══════╝
 //
+const util = require('util');
 
 module.exports = require('machine').build({
 
@@ -70,18 +71,7 @@ module.exports = require('machine').build({
     var leased = _.has(inputs.meta, 'leasedConnection');
 
 
-    //  ╔═╗╦ ╦╔═╗╔═╗╦╔═  ┌─┐┌─┐┬─┐  ┌─┐  ┌─┐┌─┐  ┌─┐┌─┐┬ ┬┌─┐┌┬┐┌─┐
-    //  ║  ╠═╣║╣ ║  ╠╩╗  ├┤ │ │├┬┘  ├─┤  ├─┘│ ┬  └─┐│  ├─┤├┤ │││├─┤
-    //  ╚═╝╩ ╩╚═╝╚═╝╩ ╩  └  └─┘┴└─  ┴ ┴  ┴  └─┘  └─┘└─┘┴ ┴└─┘┴ ┴┴ ┴
-    // This is a unique feature of Postgres. It may be passed in on a query
-    // by query basis using the meta input or configured on the datastore. Default
-    // to use the public schema.
-    var schemaName = 'public';
-    if (inputs.meta && inputs.meta.schemaName) {
-      schemaName = inputs.meta.schemaName;
-    } else if (inputs.datastore.config && inputs.datastore.config.schemaName) {
-      schemaName = inputs.datastore.config.schemaName;
-    }
+    var schemaName = Helpers.query.schemaName(inputs, inputs);
 
 
     //  ╔═╗╔═╗╔═╗╦ ╦╔╗╔  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
@@ -93,38 +83,7 @@ module.exports = require('machine').build({
         return exits.badConnection(err);
       }
 
-
-      //  ╔═╗╦═╗╔═╗╔═╗╔╦╗╔═╗  ┌─┐┌─┐┬ ┬┌─┐┌┬┐┌─┐
-      //  ║  ╠╦╝║╣ ╠═╣ ║ ║╣   └─┐│  ├─┤├┤ │││├─┤
-      //  ╚═╝╩╚═╚═╝╩ ╩ ╩ ╚═╝  └─┘└─┘┴ ┴└─┘┴ ┴┴ ┴
-      //  ┌┐┌┌─┐┌┬┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐  ┌─┐┌─┐  ┌┐┌┌─┐┌─┐┌┬┐┌─┐┌┬┐
-      //  │││├─┤│││├┤ └─┐├─┘├─┤│  ├┤   ├─┤└─┐  │││├┤ ├┤  ││├┤  ││
-      //  ┘└┘┴ ┴┴ ┴└─┘└─┘┴  ┴ ┴└─┘└─┘  ┴ ┴└─┘  ┘└┘└─┘└─┘─┴┘└─┘─┴┘
-      (function createSchemaNamespace(proceed) {
-        // If we're being told NOT to create schemas, then skip right to
-        // creating the table.
-        if (inputs.datastore.config && inputs.datastore.config.createSchemas === false) {
-          return proceed();
-        }
-
-        // Create the schema if needed.
-        // If the schema name is "public" there is nothing to create
-        if (schemaName === 'public') {
-          return proceed();
-        }
-
-        Helpers.schema.createNamespace({
-          datastore: inputs.datastore,
-          schemaName: schemaName,
-          meta: inputs.meta,
-        }, function createNamespaceCb(err) {
-          if (err) {
-            return proceed(err);
-          }
-
-          return proceed();
-        });
-      })(function afterNamespaceCreation(err) {
+      var afterNamespaceCreation = function afterNamespaceCreation(err) {
         if (err) {
           // If there was an issue, release the connection
           Helpers.connection.releaseConnection(connection, leased, function releaseConnectionCb() {
@@ -163,7 +122,7 @@ module.exports = require('machine').build({
         }
 
         // Build Query
-        var query = 'CREATE TABLE IF NOT EXISTS ' + tableName + ' (' + schema + ')';
+        var query = util.format('IF OBJECT_ID(N\'%s\', N\'U\') IS NULL BEGIN CREATE TABLE %s (%s) END', tableName, tableName, schema);
 
 
         //  ╦═╗╦ ╦╔╗╔  ┌─┐┬─┐┌─┐┌─┐┌┬┐┌─┐  ┌┬┐┌─┐┌┐ ┬  ┌─┐
@@ -186,24 +145,43 @@ module.exports = require('machine').build({
           //  ╠╩╗║ ║║║   ║║  ││││ ││├┤ ┌┴┬┘├┤ └─┐
           //  ╚═╝╚═╝╩╩═╝═╩╝  ┴┘└┘─┴┘└─┘┴ └─└─┘└─┘
           // Build any indexes
-          Helpers.schema.buildIndexes({
-            connection: connection,
-            definition: inputs.definition,
-            tableName: inputs.tableName
-          },
+          Helpers.schema.buildIndexes(
+            {
+              connection: connection,
+              definition: inputs.definition,
+              tableName: inputs.tableName
+            },
 
-          function buildIndexesCb(err) {
-            Helpers.connection.releaseConnection(connection, leased, function releaseConnectionCb() {
-              if (err) {
-                return exits.error(err);
-              }
+            function buildIndexesCb(err) {
+              Helpers.connection.releaseConnection(connection, leased, function releaseConnectionCb() {
+                if (err) {
+                  return exits.error(err);
+                }
 
-              return exits.success();
-            });
-            return;
-          }); // </ buildIndexes() >
+                return exits.success();
+              });
+            }); // </ buildIndexes() >
         }); // </ runNativeQuery >
-      }); // </ afterNamespaceCreation >
+      };
+
+
+      //  ╔═╗╦═╗╔═╗╔═╗╔╦╗╔═╗  ┌─┐┌─┐┬ ┬┌─┐┌┬┐┌─┐
+      //  ║  ╠╦╝║╣ ╠═╣ ║ ║╣   └─┐│  ├─┤├┤ │││├─┤
+      //  ╚═╝╩╚═╚═╝╩ ╩ ╩ ╚═╝  └─┘└─┘┴ ┴└─┘┴ ┴┴ ┴
+      //  ┌┐┌┌─┐┌┬┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐  ┌─┐┌─┐  ┌┐┌┌─┐┌─┐┌┬┐┌─┐┌┬┐
+      //  │││├─┤│││├┤ └─┐├─┘├─┤│  ├┤   ├─┤└─┐  │││├┤ ├┤  ││├┤  ││
+      //  ┘└┘┴ ┴┴ ┴└─┘└─┘┴  ┴ ┴└─┘└─┘  ┴ ┴└─┘  ┘└┘└─┘└─┘─┴┘└─┘─┴┘
+      // If we're being told NOT to create schemas, then skip right to
+      // creating the table.
+      if ((inputs.datastore.config && inputs.datastore.config.createSchemas === false) || schemaName === 'dbo') {
+        return afterNamespaceCreation();
+      }
+
+      Helpers.schema.createNamespace({
+        datastore: inputs.datastore,
+        schemaName: schemaName,
+        meta: inputs.meta,
+      }, afterNamespaceCreation);
     }); // </ spawnConnection >
   }
 });

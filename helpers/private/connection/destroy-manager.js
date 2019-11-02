@@ -14,17 +14,17 @@
 //
 // Destroys a connection manager.
 
-var PG = require('machinepack-postgresql');
+var MSSQL = require('@vijaykonnackal/machinepack-mssql');
 
 module.exports = function destroyManager(manager, cb) {
-  PG.destroyManager({
+  MSSQL.destroyManager({
     manager: manager
   })
-  .exec(function destroyManagerCb(err) {
-    if (err) {
-      return cb(new Error('There was an error destroying the connection manager.\n\n' + err.stack));
-    }
+    .exec(function destroyManagerCb(err) {
+      if (err) {
+        return cb(new Error('There was an error destroying the connection manager.\n\n' + err.stack));
+      }
 
-    return cb();
-  });
+      return cb();
+    });
 };

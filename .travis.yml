@@ -12,21 +12,18 @@
 language: node_js
 
 node_js:
-  - "4"
-  - "6"
   - "8"
+  - "10"
   - "node"
 
-services: postgresql
+services: mssql
 addons:
-  postgresql: "9.4"
+  mssql: "2017"
 sudo: false
 env:
-  - DB_USER=postgres DB_PASS=''
-env:
-  - WATERLINE_ADAPTER_TESTS_HOST=127.0.0.1 WATERLINE_ADAPTER_TESTS_USER=postgres WATERLINE_ADAPTER_TESTS_PASSWORD='' WATERLINE_ADAPTER_TESTS_DATABASE=adapter-tests
+  - DB_USER=sails DB_PASS='sails'
 before_script:
-  - psql -c 'create database "adapter-tests";' -U postgres
+  - mssql -c 'create database "sails-test";' -U sa
 
 branches:
   only:
