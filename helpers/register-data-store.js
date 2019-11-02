@@ -98,6 +98,11 @@ module.exports = require('machine').build({
       return exits.badConfiguration(flaverr('E_MISSING_HOST', new Error('Datastore  `' + inputs.identity + '` config is missing a host value.')));
     }
 
+    // copy host to server. machinepack-mssql expects server attribute.
+    if (!hasURL && inputs.config.host) {
+      inputs.config.server = inputs.config.host;
+    }
+
     if (!hasURL && !inputs.config.database) {
       return exits.badConfiguration(flaverr('E_MISSING_DB_NAME', new Error('Datastore  `' + inputs.identity + '` config is missing a value for the database name.')));
     }
