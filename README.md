@@ -22,13 +22,13 @@ for more details. The options are passed verbatim to downstream driver.
 ```javascript
 module.exports.datastores = {
     default: {
-        adapter: 'sails-mssql',
+        adapter: '@vijaykonnackal/sails-mssql',
         host: process.env.DB_HOST,
         port: process.env.DB_PORT,
         user: process.env.DB_USER,
         password: process.env.DB_PASS,
         database: process.env.DB_NAME,
-        schemaName: 'dbo',  //schemaSpecified in model takes precedence
+        schemaName: 'dbo',  //note: schema specified in model takes precedence
         requestTimeout: 15000,
         options: {
             encrypt: false,
