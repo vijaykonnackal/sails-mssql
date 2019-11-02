@@ -94,18 +94,7 @@ module.exports = require('machine').build({
     var fetchRecords = false;
 
 
-    //  ╔═╗╦ ╦╔═╗╔═╗╦╔═  ┌─┐┌─┐┬─┐  ┌─┐  ┌─┐┌─┐  ┌─┐┌─┐┬ ┬┌─┐┌┬┐┌─┐
-    //  ║  ╠═╣║╣ ║  ╠╩╗  ├┤ │ │├┬┘  ├─┤  ├─┘│ ┬  └─┐│  ├─┤├┤ │││├─┤
-    //  ╚═╝╩ ╩╚═╝╚═╝╩ ╩  └  └─┘┴└─  ┴ ┴  ┴  └─┘  └─┘└─┘┴ ┴└─┘┴ ┴┴ ┴
-    // This is a unique feature of Postgres. It may be passed in on a query
-    // by query basis using the meta input or configured on the datastore. Default
-    // to use the public schema.
-    var schemaName = 'public';
-    if (_.has(query.meta, 'schemaName')) {
-      schemaName = query.meta.schemaName;
-    } else if (inputs.datastore.config && inputs.datastore.config.schemaName) {
-      schemaName = inputs.datastore.config.schemaName;
-    }
+    var schemaName = Helpers.query.schemaName(inputs, query);
 
 
     //  ┌─┐┬─┐┌─┐  ┌─┐┬─┐┌─┐┌─┐┌─┐┌─┐┌─┐  ┌─┐┌─┐┌─┐┬ ┬  ┬─┐┌─┐┌─┐┌─┐┬─┐┌┬┐
@@ -154,7 +143,7 @@ module.exports = require('machine').build({
     if (_.has(query.meta, 'fetch') && query.meta.fetch) {
       fetchRecords = true;
 
-      // Add the postgres RETURNING * piece to the statement to prevent the
+      // Add the mssql output * piece to the statement to prevent the
       // overhead of running two additional queries.
       statement.returning = '*';
     }

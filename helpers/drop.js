@@ -64,18 +64,7 @@ module.exports = require('machine').build({
     var leased = _.has(inputs.meta, 'leasedConnection');
 
 
-    //  ╔═╗╦ ╦╔═╗╔═╗╦╔═  ┌─┐┌─┐┬─┐  ┌─┐  ┌─┐┌─┐  ┌─┐┌─┐┬ ┬┌─┐┌┬┐┌─┐
-    //  ║  ╠═╣║╣ ║  ╠╩╗  ├┤ │ │├┬┘  ├─┤  ├─┘│ ┬  └─┐│  ├─┤├┤ │││├─┤
-    //  ╚═╝╩ ╩╚═╝╚═╝╩ ╩  └  └─┘┴└─  ┴ ┴  ┴  └─┘  └─┘└─┘┴ ┴└─┘┴ ┴┴ ┴
-    // This is a unique feature of Postgres. It may be passed in on a query
-    // by query basis using the meta input or configured on the datastore. Default
-    // to use the public schema.
-    var schemaName = 'public';
-    if (inputs.meta && inputs.meta.schemaName) {
-      schemaName = inputs.meta.schemaName;
-    } else if (inputs.datastore.config && inputs.datastore.config.schemaName) {
-      schemaName = inputs.datastore.config.schemaName;
-    }
+    var schemaName = Helpers.query.schemaName(inputs, inputs);
 
 
     //  ╔═╗╔═╗╔═╗╦ ╦╔╗╔  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌

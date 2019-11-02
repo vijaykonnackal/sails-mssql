@@ -64,8 +64,8 @@ module.exports = function processEachRecord(options) {
       }
 
       // For attributes using the `bigint` column type, coerce empty string to zero.
-      // This allows use of `type: 'string'` with bigint, which we want because the pg driver
-      // returns bigints as strings.  And since the regular `int` field in postgres is too small
+      // This allows use of `type: 'string'` with bigint, which we want because the sql driver
+      // returns bigints as strings.  And since the regular `int` field in mssql is too small
       // to hold JS timestamps, users are forced to use `bigint` to hold them.
       if (_.get(attrDef, 'autoMigrations.columnType') === 'bigint' && record[columnName] === '') {
         record[columnName] = 0;

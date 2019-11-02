@@ -31,6 +31,8 @@
   // (we sometimes actually need to use these things)
   "evil": true,
 
+  "esversion": 9,
+
   // Tolerate funny-looking dashes in RegExp literals.
   // (see https://github.com/jshint/jshint/issues/159#issue-903547)
   "regexdash": true,

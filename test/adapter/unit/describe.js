@@ -26,9 +26,9 @@ describe('Unit Tests ::', function() {
         assert(result.fieldB);
         assert(result.id);
 
-        assert.equal(result.fieldA.type, 'text');
-        assert.equal(result.fieldB.type, 'text');
-        assert.equal(result.id.type, 'integer');
+        assert.equal(result.fieldA.type, 'varchar');
+        assert.equal(result.fieldB.type, 'varchar');
+        assert.equal(result.id.type, 'int');
         assert(result.id.primaryKey);
         assert(result.id.autoIncrement);
 

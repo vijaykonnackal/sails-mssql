@@ -14,12 +14,21 @@
 //
 // Transform a Waterline Query Statement into a SQL query.
 
-var MSSQL = require('@vijaykonnackal/machinepack-mssql');
+const _ = require('@sailshq/lodash');
 
-module.exports = function compileStatement(statement) {
-  var report = MSSQL.compileStatement({
-    statement: statement
-  }).execSync();
+module.exports = function schemaName(inputs, query) {
 
-  return report;
+  //  ╔═╗╦ ╦╔═╗╔═╗╦╔═  ┌─┐┌─┐┬─┐  ┌─┐  ┌─┐┌─┐┬ ┬┌─┐┌┬┐┌─┐
+  //  ║  ╠═╣║╣ ║  ╠╩╗  ├┤ │ │├┬┘  ├─┤  └─┐│  ├─┤├┤ │││├─┤
+  //  ╚═╝╩ ╩╚═╝╚═╝╩ ╩  └  └─┘┴└─  ┴ ┴  └─┘└─┘┴ ┴└─┘┴ ┴┴ ┴
+  // It may be passed in on a query by query basis using the meta input or configured
+  // on the datastore. Default to use the public schema.
+
+  var schemaName = 'dbo';
+  if (_.has(query.meta, 'schemaName')) {
+    schemaName = query.meta.schemaName;
+  } else if (inputs.datastore.config && inputs.datastore.config.schemaName) {
+    schemaName = inputs.datastore.config.schemaName;
+  }
+  return schemaName;
 };

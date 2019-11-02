@@ -15,7 +15,7 @@
 // Modify the record(s) and return the values that were modified.
 
 var _ = require('@sailshq/lodash');
-var PG = require('machinepack-postgresql');
+var MSSQL = require('@vijaykonnackal/machinepack-mssql');
 var runQuery = require('./run-query');
 var releaseConnection = require('../connection/release-connection');
 
@@ -66,7 +66,7 @@ module.exports = function modifyRecord(options, cb) {
     if (options.fetchRecords) {
       var parsedResults;
       try {
-        parsedResults = PG.parseNativeQueryResult({
+        parsedResults = MSSQL.parseNativeQueryResult({
           queryType: 'select',
           nativeQueryResult: report
         }).execSync();

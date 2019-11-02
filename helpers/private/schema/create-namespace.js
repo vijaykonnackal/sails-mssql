@@ -1,4 +1,5 @@
 //   ██████╗██████╗ ███████╗ █████╗ ████████╗███████╗
+//   ██████╗██████╗ ███████╗ █████╗ ████████╗███████╗
 //  ██╔════╝██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██╔════╝
 //  ██║     ██████╔╝█████╗  ███████║   ██║   █████╗
 //  ██║     ██╔══██╗██╔══╝  ██╔══██║   ██║   ██╔══╝
@@ -12,7 +13,7 @@
 //  ██║ ╚████║██║  ██║██║ ╚═╝ ██║███████╗███████║██║     ██║  ██║╚██████╗███████╗
 //  ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚══════╝╚═╝     ╚═╝  ╚═╝ ╚═════╝╚══════╝
 //
-// This is a Postgres Schema but because the name is so overloaded use namespace
+// This is a MsSql Schema but because the name is so overloaded use namespace
 // internally.
 
 var _ = require('@sailshq/lodash');
@@ -54,7 +55,7 @@ module.exports = function createNamespace(options, cb) {
     }
 
     // Build Query
-    var query = 'CREATE SCHEMA "' + options.schemaName + '"';
+    var query = 'CREATE SCHEMA ' + options.schemaName;
 
 
     //  ╦═╗╦ ╦╔╗╔  ┌─┐ ┬ ┬┌─┐┬─┐┬ ┬

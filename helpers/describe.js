@@ -6,6 +6,8 @@
 //  ╚═════╝ ╚══════╝╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝╚═════╝ ╚══════╝
 //
 
+const util = require('util');
+
 module.exports = require('machine').build({
 
 
@@ -69,18 +71,7 @@ module.exports = require('machine').build({
     var leased = _.has(inputs.meta, 'leasedConnection');
 
 
-    //  ╔═╗╦ ╦╔═╗╔═╗╦╔═  ┌─┐┌─┐┬─┐  ┌─┐  ┌─┐┌─┐  ┌─┐┌─┐┬ ┬┌─┐┌┬┐┌─┐
-    //  ║  ╠═╣║╣ ║  ╠╩╗  ├┤ │ │├┬┘  ├─┤  ├─┘│ ┬  └─┐│  ├─┤├┤ │││├─┤
-    //  ╚═╝╩ ╩╚═╝╚═╝╩ ╩  └  └─┘┴└─  ┴ ┴  ┴  └─┘  └─┘└─┘┴ ┴└─┘┴ ┴┴ ┴
-    // This is a unique feature of Postgres. It may be passed in on a query
-    // by query basis using the meta input or configured on the datastore. Default
-    // to use the public schema.
-    var schemaName = 'public';
-    if (inputs.meta && inputs.meta.schemaName) {
-      schemaName = inputs.meta.schemaName;
-    } else if (inputs.datastore.config && inputs.datastore.config.schemaName) {
-      schemaName = inputs.datastore.config.schemaName;
-    }
+    var schemaName = Helpers.query.schemaName(inputs, inputs);
 
 
     //   ██████╗ ██╗   ██╗███████╗██████╗ ██╗███████╗███████╗
@@ -96,33 +87,21 @@ module.exports = require('machine').build({
     // Build query to get a bunch of info from the information_schema
     // It's not super important to understand it only that it returns the following fields:
     // [Table, #, Column, Type, Null, Constraint, C, consrc, F Key, Default]
-    var describeQuery = "SELECT x.nspname || '.' || x.relname as \"Table\", x.attnum as \"#\", x.attname as \"Column\", x.\"Type\"," +
-      " case x.attnotnull when true then 'NOT NULL' else '' end as \"NULL\", r.conname as \"Constraint\", r.contype as \"C\", " +
-      "r.consrc, fn.nspname || '.' || f.relname as \"F Key\", d.adsrc as \"Default\" FROM (" +
-      "SELECT c.oid, a.attrelid, a.attnum, n.nspname, c.relname, a.attname, pg_catalog.format_type(a.atttypid, a.atttypmod) as \"Type\", " +
-      "a.attnotnull FROM pg_catalog.pg_attribute a, pg_namespace n, pg_class c WHERE a.attnum > 0 AND NOT a.attisdropped AND a.attrelid = c.oid " +
-      "and c.relkind not in ('S','v') and c.relnamespace = n.oid and n.nspname not in ('pg_catalog','pg_toast','information_schema')) x " +
-      "left join pg_attrdef d on d.adrelid = x.attrelid and d.adnum = x.attnum " +
-      "left join pg_constraint r on r.conrelid = x.oid and r.conkey[1] = x.attnum " +
-      "left join pg_class f on r.confrelid = f.oid " +
-      "left join pg_namespace fn on f.relnamespace = fn.oid " +
-      "where x.relname = '" + inputs.tableName + "' and x.nspname = '" + schemaName + "' order by 1,2;";
-
-    // Get Sequences to test if column auto-increments
-    var autoIncrementQuery = "SELECT t.relname as related_table, a.attname as related_column, s.relname as sequence_name " +
-      "FROM pg_class s JOIN pg_depend d ON d.objid = s.oid JOIN pg_class t ON d.objid = s.oid AND d.refobjid = t.oid " +
-      "JOIN pg_attribute a ON (d.refobjid, d.refobjsubid) = (a.attrelid, a.attnum) JOIN pg_namespace n ON n.oid = s.relnamespace " +
-      "WHERE s.relkind = 'S' AND n.nspname = '" + schemaName + "';";
+    var describeQuery = util.format('SELECT t.TABLE_SCHEMA, t.TABLE_NAME, c.COLUMN_NAME as \'Column\', c.DATA_TYPE as \'Type\', c.IS_NULLABLE, ' +
+      'k.CONSTRAINT_NAME as ConstraintName, tc.CONSTRAINT_TYPE as \'Constraint\', COLUMNPROPERTY(OBJECT_ID(t.TABLE_SCHEMA + \'.\' + t.TABLE_NAME), ' +
+      'c.COLUMN_NAME, \'IsIdentity\') as IsIdentity, ' +
+      'IsSequence = case when c.COLUMN_DEFAULT like \'%NEXT VALUE FOR%\' then 1 else 0 end ' +
+      'from INFORMATION_SCHEMA.TABLES t ' +
+      'inner join INFORMATION_SCHEMA.COLUMNS c on c.TABLE_SCHEMA = t.TABLE_SCHEMA and c.TABLE_NAME = t.TABLE_NAME ' +
+      'left outer join INFORMATION_SCHEMA.KEY_COLUMN_USAGE k on k.TABLE_NAME = t.TABLE_NAME and k.COLUMN_NAME = c.COLUMN_NAME ' +
+      'left outer join INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc on tc.TABLE_SCHEMA = t.TABLE_SCHEMA and tc.TABLE_NAME = t.TABLE_NAME and tc.CONSTRAINT_NAME = k.CONSTRAINT_NAME ' +
+      'where t.TABLE_SCHEMA = \'%s\'  and t.TABLE_NAME = \'%s\'', schemaName, inputs.tableName);
 
     // Get Indexes
-    var indiciesQuery = "SELECT n.nspname as \"Schema\", c.relname as \"Name\", CASE c.relkind WHEN 'r' THEN 'table' " +
-      "WHEN 'v' THEN 'view' WHEN 'i' THEN 'index' WHEN 'S' THEN 'sequence' WHEN 's' THEN 'special' WHEN 'f' THEN " +
-      "'foreign table' END as \"Type\", pg_catalog.pg_get_userbyid(c.relowner) as \"Owner\", c2.relname as \"Table\" " +
-      "FROM pg_catalog.pg_class c LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace " +
-      "LEFT JOIN pg_catalog.pg_index i ON i.indexrelid = c.oid " +
-      "LEFT JOIN pg_catalog.pg_class c2 ON i.indrelid = c2.oid " +
-      "WHERE c.relkind IN ('i','') AND n.nspname <> 'pg_catalog' AND n.nspname <> 'information_schema' " +
-      "AND n.nspname !~ '^pg_toast' AND pg_catalog.pg_table_is_visible(c.oid) ORDER BY 1,2;";
+    var indiciesQuery = util.format('select c.name as Name ' +
+      'from sys.index_columns ic ' +
+      'inner join sys.columns c on ic.column_id = c.column_id and c.object_id = ic.object_id ' +
+      'where c.object_id = object_id(\'%s.%s\')', schemaName, inputs.tableName);
 
 
     //  ╔═╗╔═╗╔═╗╦ ╦╔╗╔  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
@@ -148,107 +127,75 @@ module.exports = require('machine').build({
         }
 
 
-        //  ╦═╗╦ ╦╔╗╔  ┌─┐┬ ┬┌┬┐┌─┐   ┬┌┐┌┌─┐┬─┐┌─┐┌┬┐┌─┐┌┐┌┌┬┐
-        //  ╠╦╝║ ║║║║  ├─┤│ │ │ │ │───│││││  ├┬┘├┤ │││├┤ │││ │
-        //  ╩╚═╚═╝╝╚╝  ┴ ┴└─┘ ┴ └─┘   ┴┘└┘└─┘┴└─└─┘┴ ┴└─┘┘└┘ ┴
-        //  ┌─┐ ┬ ┬┌─┐┬─┐┬ ┬
-        //  │─┼┐│ │├┤ ├┬┘└┬┘
-        //  └─┘└└─┘└─┘┴└─ ┴
-        Helpers.query.runNativeQuery(connection, autoIncrementQuery, [], function runAutoIncrementQueryCb(err, incrementResults) {
-          if (err) {
-            // Release the connection on error
-            Helpers.connection.releaseConnection(connection, leased, function cb() {
+        //  ╦═╗╦ ╦╔╗╔  ┬┌┐┌┌┬┐┬┌─┐┬┌─┐┌─┐  ┌─┐ ┬ ┬┌─┐┬─┐┬ ┬
+        //  ╠╦╝║ ║║║║  ││││ ││││  │├┤ └─┐  │─┼┐│ │├┤ ├┬┘└┬┘
+        //  ╩╚═╚═╝╝╚╝  ┴┘└┘─┴┘┴└─┘┴└─┘└─┘  └─┘└└─┘└─┘┴└─ ┴
+        Helpers.query.runNativeQuery(connection, indiciesQuery, [], function runIndiciesQueryCb(err, indiciesResults) {
+          // Ensure the connection is always released back into the pool
+          Helpers.connection.releaseConnection(connection, leased, function releaseConnectionCb() {
+            if (err) {
               return exits.error(err);
-            });
-            return;
-          }
+            }
 
+            //  ╔═╗╦═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ┌─┐ ┬ ┬┌─┐┬─┐┬ ┬
+            //  ╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  │─┼┐│ │├┤ ├┬┘└┬┘
+            //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  └─┘└└─┘└─┘┴└─ ┴
+            //  ┬─┐┌─┐┌─┐┬ ┬┬ ┌┬┐┌─┐
+            //  ├┬┘├┤ └─┐│ ││  │ └─┐
+            //  ┴└─└─┘└─┘└─┘┴─┘┴ └─┘
 
-          //  ╦═╗╦ ╦╔╗╔  ┬┌┐┌┌┬┐┬┌─┐┬┌─┐┌─┐  ┌─┐ ┬ ┬┌─┐┬─┐┬ ┬
-          //  ╠╦╝║ ║║║║  ││││ ││││  │├┤ └─┐  │─┼┐│ │├┤ ├┬┘└┬┘
-          //  ╩╚═╚═╝╝╚╝  ┴┘└┘─┴┘┴└─┘┴└─┘└─┘  └─┘└└─┘└─┘┴└─ ┴
-          Helpers.query.runNativeQuery(connection, indiciesQuery, [], function runIndiciesQueryCb(err, indiciesResults) {
-            // Ensure the connection is always released back into the pool
-            Helpers.connection.releaseConnection(connection, leased, function releaseConnectionCb() {
-              if (err) {
-                return exits.error(err);
-              }
+            // Add index flag to schema
+            _.each(indiciesResults, function processIndex(column) {
+              var key = column.Name;
 
-
-              //  ╔═╗╦═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ┌─┐ ┬ ┬┌─┐┬─┐┬ ┬
-              //  ╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  │─┼┐│ │├┤ ├┬┘└┬┘
-              //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  └─┘└└─┘└─┘┴└─ ┴
-              //  ┬─┐┌─┐┌─┐┬ ┬┬ ┌┬┐┌─┐
-              //  ├┬┘├┤ └─┐│ ││  │ └─┐
-              //  ┴└─└─┘└─┘└─┘┴─┘┴ └─┘
-
-              // Add autoIncrement flag to schema
-              _.each(incrementResults, function processSequence(row) {
-                if (row.related_table !== inputs.tableName) {
+              // Look through query results and see if key exists
+              _.each(describeResults, function extendColumn(column) {
+                if (column.Column !== key) {
                   return;
                 }
 
-                // Look through query results and see if related_column exists
-                _.each(describeResults, function extendColumn(column) {
-                  if (column.Column !== row.related_column) {
-                    return;
-                  }
-
-                  column.autoIncrement = true;
-                });
+                column.indexed = true;
               });
+            });
 
-              // Add index flag to schema
-              _.each(indiciesResults, function processIndex(column) {
-                var key = column.Name.split('_index_')[1];
+            // Normalize Schema
+            var schema = {};
+            _.each(describeResults, function normalize(column) {
 
-                // Look through query results and see if key exists
-                _.each(describeResults, function extendColumn(column) {
-                  if (column.Column !== key) {
-                    return;
-                  }
-
-                  column.indexed = true;
-                });
-              });
-
-              // Normalize Schema
-              var schema = {};
-              _.each(describeResults, function normalize(column) {
-                // Set Type
+              if (_.isUndefined(schema[column.Column])) {
                 schema[column.Column] = {
                   type: column.Type
                 };
+              }
 
-                // Check for Primary Key
-                if (column.Constraint && column.C === 'p') {
-                  schema[column.Column].primaryKey = true;
-                }
+              // Check for Primary Key
+              if (column.Constraint === 'PRIMARY KEY') {
+                schema[column.Column].primaryKey = true;
+              }
 
-                // Check for Unique Constraint
-                if (column.Constraint && column.C === 'u') {
-                  schema[column.Column].unique = true;
-                }
+              // Check for Unique Constraint
+              if (column.Constraint === 'UNIQUE KEY') {
+                schema[column.Column].unique = true;
+              }
 
-                // Check for autoIncrement
-                if (column.autoIncrement) {
-                  schema[column.Column].autoIncrement = column.autoIncrement;
-                }
+              // Check for autoIncrement
+              if (column.IsIdentity) {
+                schema[column.Column].autoIncrement = !!column.IsIdentity;
+              }
 
-                // Check for index
-                if (column.indexed) {
-                  schema[column.Column].indexed = column.indexed;
-                }
-              });
+              // Check for index
+              if (column.indexed) {
+                schema[column.Column].indexed = column.indexed;
+              }
+            });
 
-              // Set Internal Schema Mapping
-              dbSchema = schema;
+            // Set Internal Schema Mapping
+            dbSchema = schema;
 
-              // Return the model schema
-              return exits.success({ schema: dbSchema });
-            }); // </ releaseConnection >
-          }); // </ runIndiciesQuery >
-        }); // </ runAutoIncrementQuery >
+            // Return the model schema
+            return exits.success({ schema: dbSchema });
+          }); // </ releaseConnection >
+        }); // </ runIndiciesQuery >
       }); // </ runDescribeQuery >
     }); // </ spawnConnection >
   }

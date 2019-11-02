@@ -5,7 +5,7 @@
 //  ╚██████╗██║  ██║███████╗██║  ██║   ██║   ███████╗    ███████║╚██████╗██║  ██║███████╗██║ ╚═╝ ██║██║  ██║
 //   ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝    ╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝
 //
-// Create a Postgres "schema". Used as namespace internally to avoid confusion.
+// Create a MsSql "schema". Used as namespace internally to avoid confusion.
 
 module.exports = require('machine').build({
 
@@ -13,7 +13,7 @@ module.exports = require('machine').build({
   friendlyName: 'Create Schema',
 
 
-  description: 'Create a Postgres schema namespace.',
+  description: 'Create a MsSql schema namespace.',
 
 
   inputs: {
@@ -75,7 +75,7 @@ module.exports = require('machine').build({
       leased: leased
     }, function cb(err) {
       if (err) {
-        return exits.error(new Error('There was an error creating the postgres schema.' + err.stack));
+        return exits.error(new Error('There was an error creating the mssql schema.' + err.stack));
       }
 
       return exits.success();

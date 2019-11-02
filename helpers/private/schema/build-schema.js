@@ -50,18 +50,16 @@ module.exports = function buildSchema(definition) {
     // UUIDs as a pseudo-"autoincrement" using the following hack:
 	  //     columnType: 'UUID DEFAULT uuid_generate_v4()'
     //
-    // > Side note: These are all of PostgreSQL's numeric column types:
-    // > https://www.postgresql.org/docs/9.5/static/datatype-numeric.html
     var computedColumnType;
     switch (attribute.columnType.toLowerCase()) {
       // Default `columnType` (automigrate):
-      case '_number':          computedColumnType = (attribute.autoIncrement ? 'SERIAL' : 'REAL'); break;
-      case '_numberkey':       computedColumnType = (attribute.autoIncrement ? 'SERIAL' : 'INTEGER'); break;
-      case '_numbertimestamp': computedColumnType = (attribute.autoIncrement ? 'BIGSERIAL' : 'BIGINT'); break;
+      case '_number':          computedColumnType = (attribute.autoIncrement ? 'INT identity(1,1)' : 'INT'); break;
+      case '_numberkey':       computedColumnType = (attribute.autoIncrement ? 'INT identity(1,1)' : 'INT'); break;
+      case '_numbertimestamp': computedColumnType = (attribute.autoIncrement ? 'INT identity(1,1)' : 'INT'); break;
       case '_string':          computedColumnType = 'TEXT'; break;
       case '_stringkey':       computedColumnType = 'VARCHAR'; break;
       case '_stringtimestamp': computedColumnType = 'VARCHAR'; break;
-      case '_boolean':         computedColumnType = 'BOOLEAN'; break;
+      case '_boolean':         computedColumnType = 'BIT'; break;
       case '_json':            computedColumnType = 'JSON'; break;
       case '_ref':             computedColumnType = 'TEXT'; break;
 
@@ -70,13 +68,16 @@ module.exports = function buildSchema(definition) {
     }
 
     // If auto-incrementing, and our normalized column type doesn't contain what
-    // looks to be a valid auto-incrementing PostgreSQL type (e.g. "SERIAL"),
+    // looks to be a valid auto-incrementing MsSql type,
     // then freak out with a reasonable error message.
     if (attribute.autoIncrement && computedColumnType.match(/^(SMALLINT|INTEGER|BIGINT|DECIMAL|NUMERIC|REAL|DOUBLE\sPRECISION)$/i)) {
-      throw new Error('Incompatible `columnType` for auto-incrementing column ("'+columnName+'").  Expecting `columnType` to be left undefined, or to be set explicitly to SERIAL, BIGSERIAL, or SMALLSERIAL.  But instead got a different numeric PostgreSQL column type, "'+attribute.columnType+'", which unfortunately does not support auto-increment.  To resolve this, please remove this explicit `columnType`, or set it to an auto-increment-compatible PostgreSQL column type.');
+      throw new Error('Incompatible `columnType` for auto-incrementing column ("'+columnName+'").  Expecting `columnType` ' +
+        'to be left undefined, or to be set explicitly to INT.  But instead got a different numeric MsSql column type, "' +
+        attribute.columnType+ '", which unfortunately does not support auto-increment.  To resolve this, please remove ' +
+        'this explicit `columnType`, or set it to an auto-increment-compatible MsSql column type.');
     }//•
 
-    // Mix in other auto-migration directives to get the PostgreSQL-ready SQL
+    // Mix in other auto-migration directives to get the MsSql-ready SQL
     // we'll use to declare this column's physical data type.
     return [
       '"'+columnName+'"',

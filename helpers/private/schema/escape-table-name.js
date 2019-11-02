@@ -12,7 +12,7 @@
 //  ██║ ╚████║██║  ██║██║ ╚═╝ ██║███████╗
 //  ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝
 //
-// Given a table name, escape it for the database and add the postgres schema
+// Given a table name, escape it for the database and add the MsSql schema
 // if needed.
 
 module.exports = function escapeTableName(name, schemaName) {
