@@ -1,4 +1,5 @@
 # Sails MsSql
+[![Build Status](https://travis-ci.org/vijaykonnackal/sails-mssql.svg?branch=master)](https://travis-ci.org/vijaykonnackal/sails-mssql)
 
 A [Waterline](http://waterlinejs.org) adapter for working with the Microsoft SqlServer database.
 
