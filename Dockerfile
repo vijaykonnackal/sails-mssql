@@ -1,5 +1,13 @@
-FROM nodesource/node:9
+FROM node:10
 
-ADD package.json package.json
+RUN mkdir -p /opt/sails-mssql
+
+WORKDIR /opt/sails-mssql
+COPY package.json package.json
 RUN npm install
+
+COPY ./test/docker/* ./
+RUN chmod +x *.sh
 ADD . .
+
+CMD ["./wait-for-it.sh", "-t", "60", "sqlserver:1433", "--", "./compose-test.sh"]

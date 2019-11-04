@@ -1,34 +1,22 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#   ╔╦╗╦═╗╔═╗╦  ╦╦╔═╗ ┬ ┬┌┬┐┬                           #
-#    ║ ╠╦╝╠═╣╚╗╔╝║╚═╗ └┬┘││││                           #
-#  o ╩ ╩╚═╩ ╩ ╚╝ ╩╚═╝o ┴ ┴ ┴┴─┘                         #
-#                                                       #
-# This file configures Travis CI.                       #
-# (i.e. how we run the tests... mainly)                 #
-#                                                       #
-# https://docs.travis-ci.com/user/customizing-the-build #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
 language: node_js
 
 node_js:
-  - "8"
-  - "10"
-  - "node"
+  - 10
 
-services: mssql
-addons:
-  mssql: "2017"
-sudo: false
 env:
-  - DB_USER=sails DB_PASS='sails'
+  global:
+    - SA_PASSWORD
+    - MSSQL_HOST=localhost
+    - MSSQL_PORT=1433
+    - MSSQL_USER=sa
+    - MSSQL_PASSWORD=${SA_PASSWORD}
+    - MSSQL_DB=sails-test
+
+services:
+  - docker
+
 before_script:
-  - mssql -c 'create database "sails-test";' -U sa
-
-branches:
-  only:
-    - master
-
-notifications:
-  email:
-    - ci@sailsjs.com
+  - sudo docker run --name=mssql-server-2017-latest-ubuntu -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SA_PASSWORD" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+  - sudo docker cp test/docker mssql-server-2017-latest-ubuntu:/sails-mssql
+  - sudo docker exec -it mssql-server-2017-latest-ubuntu /bin/bash -c 'chmod 777 /sails-mssql/*.sh'
+  - sudo docker exec -it mssql-server-2017-latest-ubuntu /sails-mssql/wait-for-it.sh -t 120 localhost:1433 -- /sails-mssql/travis-test.sh

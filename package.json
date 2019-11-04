@@ -27,6 +27,7 @@
     "eslint": "^6.6.0",
     "mocha": "^6.2.2",
     "waterline-adapter-tests": "^1.0.1",
+    "mssql": "^5.1.0",
     "np": "*"
   },
   "scripts": {
@@ -34,7 +35,6 @@
     "fasttest": "node ./node_modules/mocha/bin/mocha test/adapter/unit --recursive && node test/adapter/integration/runner",
     "pretest": "npm run lint",
     "lint": "eslint lib helpers test",
-    "docker": "docker-compose run adapter bash",
     "benchmark": "node ./node_modules/mocha/bin/mocha test/benchmarks --recursive",
     "release": "np"
   },
