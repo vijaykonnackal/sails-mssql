@@ -281,7 +281,7 @@ module.exports = require('machine').build({
         //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  └─┘┴ ┴┴┴─┘─┴┘  └─┘ ┴ ┴ ┴ ┴ └─┘┴ ┴└─┘┘└┘ ┴ └─┘
         // For each child statement, figure out how to turn the statement into
         // a native query and then run it. Add the results to the query cache.
-        async.each(statements.childStatements, function processChildStatements(template, next) {
+        async.eachSeries(statements.childStatements, function processChildStatements(template, next) {
           //  ╦═╗╔═╗╔╗╔╔╦╗╔═╗╦═╗  ┬┌┐┌  ┌─┐ ┬ ┬┌─┐┬─┐┬ ┬
           //  ╠╦╝║╣ ║║║ ║║║╣ ╠╦╝  ││││  │─┼┐│ │├┤ ├┬┘└┬┘
           //  ╩╚═╚═╝╝╚╝═╩╝╚═╝╩╚═  ┴┘└┘  └─┘└└─┘└─┘┴└─ ┴
