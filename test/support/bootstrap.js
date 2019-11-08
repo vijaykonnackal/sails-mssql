@@ -3,7 +3,7 @@
  */
 
 var _ = require('@sailshq/lodash');
-var MSSQL = require('@vijaykonnackal/machinepack-mssql');
+var MSSQL = require('../../helpers/sql');
 var adapter = require('../../lib/adapter');
 var util = require('util');
 

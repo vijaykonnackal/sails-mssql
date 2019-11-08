@@ -24,12 +24,10 @@ describe('Unit Tests ::', function() {
       };
 
       Adapter.count('test', query, function(err, result) {
-        if (err) {
-          return done(err);
-        }
-        assert(result);
-        assert.equal(result, 1);
-        done();
+        Support.check(done, err, () => {
+          assert(result);
+          assert.equal(result, 1);
+        });
       });
     });
 
@@ -45,12 +43,10 @@ describe('Unit Tests ::', function() {
       };
 
       Adapter.count('test', query, (err) => {
-        if (err) {
-          return done(err);
-        }
-        var postConnectionsAvailable = manager.pool.pool.size;
-        assert.equal(preConnectionsAvailable, postConnectionsAvailable);
-        done();
+        Support.check(done, err, () => {
+          var postConnectionsAvailable = manager.pool.pool.size;
+          assert.equal(preConnectionsAvailable, postConnectionsAvailable);
+        });
       });
     });
   });

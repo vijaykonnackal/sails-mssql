@@ -14,7 +14,7 @@
 //
 // Destroys a connection manager.
 
-var MSSQL = require('@vijaykonnackal/machinepack-mssql');
+var MSSQL = require('../../sql');
 
 module.exports = function destroyManager(manager, cb) {
   MSSQL.destroyManager({

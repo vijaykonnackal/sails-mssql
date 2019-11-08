@@ -14,7 +14,7 @@
 //
 // Release an open database connection.
 
-var MSSQL = require('@vijaykonnackal/machinepack-mssql');
+var MSSQL = require('../../sql');
 
 module.exports = function releaseConnection(connection, leased, cb) {
   // If this connection was leased outside of the Adapter, don't release it.

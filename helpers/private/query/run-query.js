@@ -8,7 +8,7 @@
 // Send a Native Query to the datastore and gracefully handle errors.
 
 var _ = require('@sailshq/lodash');
-var MSSQL = require('@vijaykonnackal/machinepack-mssql');
+var MSSQL = require('../../sql');
 var releaseConnection = require('../connection/release-connection');
 
 module.exports = function runQuery(options, cb) {

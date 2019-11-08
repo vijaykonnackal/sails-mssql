@@ -77,7 +77,7 @@ module.exports = require('machine').build({
   fn: function registerDataStore(inputs, exits) {
     // Dependencies
     var _ = require('@sailshq/lodash');
-    var MSSQL = require('@vijaykonnackal/machinepack-mssql');
+    var MSSQL = require('./sql');
     var flaverr = require('flaverr');
     var Helpers = require('./private');
 

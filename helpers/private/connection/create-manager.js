@@ -14,7 +14,7 @@
 //
 // Create a new connection manager to use.
 
-var MSSQL = require('@vijaykonnackal/machinepack-mssql');
+var MSSQL = require('../../sql');
 
 module.exports = function createManager(url, config, cb) {
   MSSQL.createManager({

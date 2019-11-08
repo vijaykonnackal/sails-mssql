@@ -15,7 +15,7 @@
 // Modify the record(s) and return the values that were modified.
 
 var _ = require('@sailshq/lodash');
-var MSSQL = require('@vijaykonnackal/machinepack-mssql');
+var MSSQL = require('../../sql');
 var runQuery = require('./run-query');
 var releaseConnection = require('../connection/release-connection');
 
@@ -39,11 +39,12 @@ module.exports = function modifyRecord(options, cb) {
     throw new Error('Invalid option used in options argument. Missing or invalid leased flag.');
   }
 
-
+  // const queryType = options.fetchRecords ? null : 'update';
   //  ╦═╗╦ ╦╔╗╔  ┌─┐ ┬ ┬┌─┐┬─┐┬ ┬
   //  ╠╦╝║ ║║║║  │─┼┐│ │├┤ ├┬┘└┬┘
   //  ╩╚═╚═╝╝╚╝  └─┘└└─┘└─┘┴└─ ┴
   runQuery({
+    // queryType: queryType,
     connection: options.connection,
     nativeQuery: options.query,
     valuesToEscape: options.valuesToEscape,

@@ -1,24 +1,20 @@
 var assert = require('assert');
+const expect = require('chai').expect;
+const should = require('chai').should();
 var _ = require('@sailshq/lodash');
 var Adapter = require('../../../lib/adapter');
-var Support = require('../../support/bootstrap');
+var Support = require('../../support/bootstrap-promisified');
 
 describe('Unit Tests ::', function() {
   describe('Update', function() {
     // Test Setup
-    before(function(done) {
-      Support.Setup('test_update', function(err) {
-        if (err) {
-          return done(err);
-        }
-
-        // Seed the database with two simple records.
-        Support.Seed('test_update', done);
-      });
+    before(async function() {
+      await Support.Setup('test_update');
+      await Support.Seed('test_update');
     });
 
-    after(function(done) {
-      Support.Teardown('test_update', done);
+    after(async function() {
+      await Support.Teardown('test_update');
     });
 
     it('should update the correct record', function(done) {
@@ -38,29 +34,48 @@ describe('Unit Tests ::', function() {
       };
 
       Adapter.update('test', query, function(err, results) {
-        if (err) {
-          return done(err);
-        }
-
-        assert(_.isArray(results));
-        assert.equal(results.length, 1);
-        assert.equal(_.first(results).fieldA, 'foobar');
-        assert.equal(_.first(results).fieldB, 'bar');
-
-        return done();
+        Support.check(done, err, () => {
+          assert(_.isArray(results));
+          assert.equal(results.length, 1);
+          assert.equal(_.first(results).fieldA, 'foobar');
+          assert.equal(_.first(results).fieldB, 'bar');
+        });
       });
     });
 
-    it('should be case sensitive', function(done) {
+    it('fetch=false. should update and return nil', function(done) {
       var query = {
         using: 'test_update',
         criteria: {
           where: {
-            fieldB: 'bAr_2'
+            fieldA: 'foo'
           }
         },
         valuesToSet: {
-          fieldA: 'FooBar'
+          fieldB: 'bar2'
+        },
+        meta: {
+          fetch: false
+        }
+      };
+
+      Adapter.update('test', query, function(err, results) {
+        Support.check(done, err, () => {
+          should.not.exist(results);
+        });
+      });
+    });
+
+    it('should be case insensitive', function(done) {
+      var query = {
+        using: 'test_update',
+        criteria: {
+          where: {
+            fieldB: 'bar_2'
+          }
+        },
+        valuesToSet: {
+          fieldA: 'foo'
         },
         meta: {
           fetch: true
@@ -68,16 +83,10 @@ describe('Unit Tests ::', function() {
       };
 
       Adapter.update('test', query, function(err, results) {
-        if (err) {
-          return done(err);
-        }
-
-        assert(_.isArray(results));
-        assert.equal(results.length, 1);
-        assert.equal(_.first(results).fieldA, 'FooBar');
-        assert.equal(_.first(results).fieldB, 'bAr_2');
-
-        return done();
+        Support.check(done, err, () => {
+          expect(results).to.be.an('array');
+          expect(results.length).to.equal(1);
+        });
       });
     });
 
@@ -94,14 +103,10 @@ describe('Unit Tests ::', function() {
       };
 
       Adapter.update('test', query, function(err) {
-        if (err) {
-          return done(err);
-        }
-
-        var postConnectionsAvailable = manager.pool.pool.size;
-        assert.equal(preConnectionsAvailable, postConnectionsAvailable);
-
-        return done();
+        Support.check(done, err, () => {
+          var postConnectionsAvailable = manager.pool.pool.size;
+          assert.equal(preConnectionsAvailable, postConnectionsAvailable);
+        });
       });
     });
   });

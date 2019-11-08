@@ -1,5 +1,5 @@
 {
-  "name": "@vijaykonnackal/sails-mssql",
+  "name": "sails-sqlserver-adapter",
   "description": "a MsSql adapter for Waterline and Sails.js",
   "version": "1.1.2",
   "author": "Vijay Konnackal <vijay.konnackal@gmail.com>",
@@ -19,13 +19,14 @@
     "async": "^3.1.0",
     "flaverr": "^1.10.0",
     "machine": "^15.2.2",
-    "@vijaykonnackal/machinepack-mssql": "^1.1.1",
-    "waterline-utils": "^1.4.2"
+    "machinepack-mssql": "https://github.com/vijaykonnackal/machinepack-mssql.git",
+    "waterline-utils": "https://github.com/vijaykonnackal/waterline-utils.git"
   },
   "devDependencies": {
     "benchmark": "^2.1.4",
     "eslint": "^6.6.0",
     "mocha": "^6.2.2",
+    "chai": "^4.2.0",
     "waterline-adapter-tests": "^1.0.1",
     "mssql": "^5.1.0",
     "np": "*"
