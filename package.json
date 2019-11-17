@@ -1,26 +1,27 @@
 {
   "name": "sails-sqlserver-adapter",
   "description": "a MsSql adapter for Waterline and Sails.js",
-  "version": "1.1.2",
+  "version": "2.0.0",
   "author": "Vijay Konnackal <vijay.konnackal@gmail.com>",
-  "url": "https://github.com/vijaykonnackal/sails-mssql",
+  "url": "https://github.com/vijaykonnackal/sails-sqlserver-adapter",
   "keywords": [
     "mssql",
+    "sqlserver",
     "orm",
     "waterline",
     "sails"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/vijaykonnackal/sails-mssql.git"
+    "url": "https://github.com/vijaykonnackal/sails-sqlserver-adapter.git"
   },
   "dependencies": {
     "@sailshq/lodash": "^3.10.4",
     "async": "^3.1.0",
     "flaverr": "^1.10.0",
     "machine": "^15.2.2",
-    "machinepack-mssql": "https://github.com/vijaykonnackal/machinepack-mssql.git",
-    "waterline-utils": "https://github.com/vijaykonnackal/waterline-utils.git"
+    "machinepack-sqlserver": "^2.0.0",
+    "waterline-utils": "^1.4.2"
   },
   "devDependencies": {
     "benchmark": "^2.1.4",
@@ -44,7 +45,7 @@
     "lib": "./lib"
   },
   "license": "MIT",
-  "bugs": "https://github.com/vijaykonnackal/sails-mssql/issues",
+  "bugs": "https://github.com/vijaykonnackal/sails-sqlserver-adapter/issues",
   "waterlineAdapter": {
     "waterlineVersion": "~0.13.0",
     "interfaces": [

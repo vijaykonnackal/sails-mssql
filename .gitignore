@@ -15,6 +15,7 @@
 # sails / node.js / npm
 ############################
 node_modules
+coverage
 npm-debug.log
 .node_history
 package-lock.json

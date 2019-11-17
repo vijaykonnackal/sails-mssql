@@ -1,8 +1,8 @@
 FROM node:10
 
-RUN mkdir -p /opt/sails-mssql
+RUN mkdir -p /opt/sails-sqlserver-adapter
 
-WORKDIR /opt/sails-mssql
+WORKDIR /opt/sails-sqlserver-adapter
 COPY package.json package.json
 RUN npm install
 

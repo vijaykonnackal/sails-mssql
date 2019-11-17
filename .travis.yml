@@ -17,6 +17,6 @@ services:
 
 before_script:
   - sudo docker run --name=mssql-server-2017-latest-ubuntu -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SA_PASSWORD" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2017-latest-ubuntu
-  - sudo docker cp test/docker mssql-server-2017-latest-ubuntu:/sails-mssql
-  - sudo docker exec -it mssql-server-2017-latest-ubuntu /bin/bash -c 'chmod 777 /sails-mssql/*.sh'
-  - sudo docker exec -it mssql-server-2017-latest-ubuntu /sails-mssql/wait-for-it.sh -t 120 localhost:1433 -- /sails-mssql/travis-test.sh
+  - sudo docker cp test/docker mssql-server-2017-latest-ubuntu:/sails-sqlserver-adapter
+  - sudo docker exec -it mssql-server-2017-latest-ubuntu /bin/bash -c 'chmod 777 /sails-sqlserver-adapter/*.sh'
+  - sudo docker exec -it mssql-server-2017-latest-ubuntu /sails-sqlserver-adapter/wait-for-it.sh -t 120 localhost:1433 -- /sails-sqlserver-adapter/travis-test.sh

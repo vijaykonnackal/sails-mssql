@@ -1,3 +1,3 @@
 
 
-module.exports = require('machinepack-mssql');
+module.exports = require('machinepack-sqlserver');

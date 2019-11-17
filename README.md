@@ -10,7 +10,7 @@ This is largely a port of [sails-postgresql](https://github.com/balderdashy/sail
 
 ## Install
 ```shell script
-$ npm install @vijaykonnackal/sails-mssql
+$ npm install sails-sqlserver-adapter
 ```
 
 ## Usage
@@ -23,7 +23,7 @@ for more details. The options are passed verbatim to downstream driver.
 ```javascript
 module.exports.datastores = {
     default: {
-        adapter: '@vijaykonnackal/sails-mssql',
+        adapter: 'sails-sqlserver-adapter',
         host: process.env.DB_HOST,
         port: process.env.DB_PORT,
         user: process.env.DB_USER,
@@ -46,7 +46,7 @@ module.exports.datastores = {
 
 ## Help
 
-If you have further questions or are having trouble, click [here](https://github.com/vijaykonnackal/sails-mssql/issues).
+If you have further questions or are having trouble, click [here](https://github.com/vijaykonnackal/sails-sqlserver-adapter/issues).
 
 ## License
 
