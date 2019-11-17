@@ -1,5 +1,5 @@
 # Sails MsSql
-[![Build Status](https://travis-ci.org/vijaykonnackal/sails-mssql.svg?branch=master)](https://travis-ci.org/vijaykonnackal/sails-mssql)
+[![Build Status](https://travis-ci.org/vijaykonnackal/sails-sqlserver-adapter.svg?branch=master)](https://travis-ci.org/vijaykonnackal/sails-sqlserver-adapter)
 
 A [Waterline](http://waterlinejs.org) adapter for working with the Microsoft SqlServer database.
 
@@ -43,6 +43,20 @@ module.exports.datastores = {
     }
 };
 ```
+
+## Running Test
+The repo is configured to run all the tests in Docker containers. The composition uses two container
+1. Public sql server 2017 container published by Microsoft
+2. A container for testing the package based on official Node 10 release
+
+To run the tests in docker env
+
+```sh
+$ docker-compose up
+``` 
+
+The github repo is configure to run the tests in Travis-CI on code push. The status of the build can be seen at the top of
+the repo
 
 ## Help
 
