@@ -55,13 +55,16 @@ module.exports = function buildSchema(definition) {
       // Default `columnType` (automigrate):
       case '_number':          computedColumnType = (attribute.autoIncrement ? 'INT identity(1,1)' : 'INT'); break;
       case '_numberkey':       computedColumnType = (attribute.autoIncrement ? 'INT identity(1,1)' : 'INT'); break;
-      case '_numbertimestamp': computedColumnType = (attribute.autoIncrement ? 'INT identity(1,1)' : 'INT'); break;
-      case '_string':          computedColumnType = 'TEXT'; break;
-      case '_stringkey':       computedColumnType = 'VARCHAR'; break;
-      case '_stringtimestamp': computedColumnType = 'VARCHAR'; break;
-      case '_boolean':         computedColumnType = 'BIT'; break;
-      case '_json':            computedColumnType = 'JSON'; break;
-      case '_ref':             computedColumnType = 'TEXT'; break;
+      case '_numbertimestamp': computedColumnType = (attribute.autoIncrement ? 'BIGINT identity(1,1)' : 'TIMESTAMP'); break;
+      case '_string':          computedColumnType = 'varchar(max)'; break;
+      case '_stringkey':       computedColumnType = 'VARCHAR(255)'; break;
+      case '_stringtimestamp': computedColumnType = 'VARCHAR(255)'; break;
+      case '_boolean':
+      case 'boolean':          computedColumnType = 'BIT'; break;
+      case '_json':
+      case 'json':             computedColumnType = 'nvarchar(max)'; break;
+      case 'varchar':          computedColumnType = 'varchar(1000)'; break;
+      case '_ref':             computedColumnType = 'varchar(max)'; break;
 
       // Custom `columnType`:
       default:                 computedColumnType = attribute.columnType; break;

@@ -60,6 +60,13 @@ module.exports = require('machine').build({
     var WLUtils = require('waterline-utils');
     var Helpers = require('./private');
 
+    const criterias = [];
+    criterias.push(inputs.query.criteria);
+    _.each(inputs.query.joins, join => {
+      criterias.push(join.criteria);
+    });
+    Helpers.util.correctLimit(criterias);
+
     var meta = _.has(inputs.query, 'meta') ? inputs.query.meta : {};
 
     // Set a flag if a leased connection from outside the adapter was used or not.
@@ -319,6 +326,8 @@ module.exports = require('machine').build({
             var unionStatements = [];
 
             // Build up an array of generated statements
+            const orderBy = template.statement.orderBy;
+            delete template.statement.orderBy;
             _.each(parentKeys, function buildUnion(parentPk) {
               var unionStatement = _.merge({}, template.statement);
 
@@ -335,9 +344,12 @@ module.exports = require('machine').build({
             });
 
             // Replace the final statement with the UNION ALL clause
-            if (unionStatements.length) {
+            if (_.size(parentKeys) === 1) {
+              template.statement = unionStatements[0];
+            } else if (_.size(parentKeys) > 1) {
               template.statement = { unionAll: unionStatements };
             }
+            template.statement.orderBy = orderBy;
           }
 
           // If there isn't a statement to be run, then just return

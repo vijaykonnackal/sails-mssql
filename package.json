@@ -20,7 +20,7 @@
     "async": "^3.1.0",
     "flaverr": "^1.10.0",
     "machine": "^15.2.2",
-    "machinepack-sqlserver": "^2.0.0",
+    "machinepack-sqlserver": "^2.0.1",
     "waterline-utils": "^1.4.2"
   },
   "devDependencies": {
@@ -28,17 +28,15 @@
     "eslint": "^6.6.0",
     "mocha": "^6.2.2",
     "chai": "^4.2.0",
-    "waterline-adapter-tests": "^1.0.1",
-    "mssql": "^5.1.0",
-    "np": "*"
+    "waterline-adapter-tests": "https://github.com/vijaykonnackal/waterline-adapter-tests.git",
+    "mssql": "^5.1.0"
   },
   "scripts": {
-    "test": "node ./node_modules/mocha/bin/mocha test/adapter/unit --recursive",
+    "test": "node ./node_modules/mocha/bin/mocha test/adapter/unit --recursive && node test/adapter/integration/runner",
     "fasttest": "node ./node_modules/mocha/bin/mocha test/adapter/unit --recursive && node test/adapter/integration/runner",
     "pretest": "npm run lint",
     "lint": "eslint lib helpers test",
-    "benchmark": "node ./node_modules/mocha/bin/mocha test/benchmarks --recursive",
-    "release": "np"
+    "benchmark": "node ./node_modules/mocha/bin/mocha test/benchmarks --recursive"
   },
   "main": "lib/adapter",
   "directories": {
@@ -51,7 +49,6 @@
     "interfaces": [
       "semantic",
       "queryable",
-      "migratable",
       "associations",
       "sql"
     ],

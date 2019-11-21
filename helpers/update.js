@@ -75,6 +75,7 @@ module.exports = require('machine').build({
 
     // Store the Query input for easier access
     var query = inputs.query;
+    query.criteria = _.omit(query.criteria, ['limit', 'skip', 'sort']);
     query.meta = query.meta || {};
 
 

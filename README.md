@@ -1,4 +1,4 @@
-# Sails MsSql
+# Sails Sqlserver Adapter
 [![Build Status](https://travis-ci.org/vijaykonnackal/sails-sqlserver-adapter.svg?branch=master)](https://travis-ci.org/vijaykonnackal/sails-sqlserver-adapter)
 
 A [Waterline](http://waterlinejs.org) adapter for working with the Microsoft SqlServer database.
@@ -15,7 +15,6 @@ $ npm install sails-sqlserver-adapter
 
 ## Usage
 An example configuration below. 
-
 
 Check [MsSql Driver Options](https://github.com/tediousjs/node-mssql#connection-pools) and [Tarn Pool Options](https://github.com/vincit/tarn.js/#usage)
 for more details. The options are passed verbatim to downstream driver.
@@ -46,7 +45,7 @@ module.exports.datastores = {
 
 ## Running Test
 The repo is configured to run all the tests in Docker containers. The composition uses two container
-1. Public sql server 2017 container published by Microsoft
+1. sql server 2017 container spec published by Microsoft
 2. A container for testing the package based on official Node 10 release
 
 To run the tests in docker env

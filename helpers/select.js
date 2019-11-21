@@ -70,6 +70,7 @@ module.exports = require('machine').build({
 
     // Store the Query input for easier access
     var query = inputs.query;
+    Helpers.util.correctLimit(query.criteria);
     query.meta = query.meta || {};
 
 
@@ -79,6 +80,7 @@ module.exports = require('machine').build({
       return exits.invalidDatastore();
     }
 
+    Helpers.util.fixSkipWithNoSort(query.criteria, model);
 
     // Set a flag if a leased connection from outside the adapter was used or not.
     var leased = _.has(query.meta, 'leasedConnection');

@@ -58,7 +58,7 @@ module.exports = function processEachRecord(options) {
       // JSON stringify any type of JSON attributes that have array values because
       // the queries won't be generated correctly otherwise.
       if (attrDef.type === 'json' && _.has(record, columnName)) {
-        if (_.isArray(record[columnName]) || _.isString(record[columnName])) {
+        if (_.isArray(record[columnName]) || _.isObject(record[columnName]) || _.isString(record[columnName])) {
           record[columnName] = JSON.stringify(record[columnName]);
         }
       }
@@ -67,8 +67,12 @@ module.exports = function processEachRecord(options) {
       // This allows use of `type: 'string'` with bigint, which we want because the sql driver
       // returns bigints as strings.  And since the regular `int` field in mssql is too small
       // to hold JS timestamps, users are forced to use `bigint` to hold them.
-      if (_.get(attrDef, 'autoMigrations.columnType') === 'bigint' && record[columnName] === '') {
-        record[columnName] = 0;
+      if (_.get(attrDef, 'autoMigrations.columnType') === 'bigint') {
+        if (record[columnName] === '') {
+          record[columnName] = 0;
+        } else if (!_.isUndefined(record[columnName])) {
+          record[columnName] = '' + record[columnName];
+        }
       }
 
     });

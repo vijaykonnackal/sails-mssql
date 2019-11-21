@@ -64,6 +64,16 @@ module.exports = function processEachRecord(options) {
           record[columnName] = Number(record[columnName]);
         }
       }
+
+      if (attrVal.type === 'json' && _.has(record, columnName)) {
+        if (_.isArray(record[columnName]) || _.isString(record[columnName])) {
+          try {
+            record[columnName] = JSON.parse(record[columnName]);
+          } catch(err) {
+            //ignore
+          }
+        }
+      }
     });
   }, true, options.identity, options.orm);
 };

@@ -26,5 +26,10 @@ module.exports = {
     buildSchema: require('./schema/build-schema'),
     createNamespace: require('./schema/create-namespace'),
     escapeTableName: require('./schema/escape-table-name')
+  },
+
+  util: {
+    correctLimit: require('./util').correctLimit,
+    fixSkipWithNoSort: require('./util').fixSkipWithNoSort
   }
 };
