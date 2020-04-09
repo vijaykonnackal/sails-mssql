@@ -1,11 +1,11 @@
 language: node_js
 
 node_js:
-  - 10
+  - 12
 
 env:
   global:
-    - SA_PASSWORD
+    - SA_PASSWORD=Password1
     - MSSQL_HOST=localhost
     - MSSQL_PORT=1433
     - MSSQL_USER=sa
@@ -16,7 +16,8 @@ services:
   - docker
 
 before_script:
-  - sudo docker run --name=mssql-server-2017-latest-ubuntu -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SA_PASSWORD" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2017-latest-ubuntu
-  - sudo docker cp test/docker mssql-server-2017-latest-ubuntu:/sails-sqlserver-adapter
-  - sudo docker exec -it mssql-server-2017-latest-ubuntu /bin/bash -c 'chmod 777 /sails-sqlserver-adapter/*.sh'
-  - sudo docker exec -it mssql-server-2017-latest-ubuntu /sails-sqlserver-adapter/wait-for-it.sh -t 120 localhost:1433 -- /sails-sqlserver-adapter/travis-test.sh
+  - docker run -d -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SA_PASSWORD" -p 1433:1433 -d --name=sqlserver --name=mssql-server-2017-latest-ubuntu
+  - docker cp test/docker sqlserver:/sails-sqlserver-adapter
+  - docker exec -it -u root sqlserver sh -c 'chmod 777 /sails-sqlserver-adapter/*.sh'
+  - sleep 60s
+  - docker exec -it -u root sqlserver sh -c /sails-sqlserver-adapter/travis-test.sh
