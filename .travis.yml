@@ -16,7 +16,7 @@ services:
   - docker
 
 before_script:
-  - docker run -d -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SA_PASSWORD" -p 1433:1433 -d --name=sqlserver --name=mssql-server-2017-latest-ubuntu
+  - docker run -d -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SA_PASSWORD" -p 1433:1433 --name=sqlserver mcr.microsoft.com/mssql/server
   - docker cp test/docker sqlserver:/sails-sqlserver-adapter
   - docker exec -it -u root sqlserver sh -c 'chmod 777 /sails-sqlserver-adapter/*.sh'
   - sleep 60s
